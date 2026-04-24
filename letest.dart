@@ -12,3 +12,15 @@ class racineApp extends StatelessWidget {
     }//fin build
 
 }// fin class racineApp
+
+class HomePage extends StatefulWidget {
+    @override 
+    Widget build(BuildContext context){
+        return Scaffold( 
+            
+
+        )//fin scaffold
+
+    }//fin build
+
+} //fin HomePage
