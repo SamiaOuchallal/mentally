@@ -12,9 +12,9 @@ class Page1 extends StatefulWidget {
 }// fin Page1
 
 class _Page1State extends State<Page1> {
-  int? _indexHumeur;
+  int? _indexHumeur; //int correspondant au choix de l'emoji
   final TextEditingController _noteController = TextEditingController();
   final List<XFile> _imagesChoisies = [];
   final ImagePicker _picker = ImagePicker();
-  
+
 }//fin _Page1State
