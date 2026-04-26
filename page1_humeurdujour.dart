@@ -14,7 +14,7 @@ class Page1 extends StatefulWidget {
 class _Page1State extends State<Page1> {
   int? _indexHumeur; //int correspondant au choix de l'emoji
   final TextEditingController _noteController = TextEditingController();
-  final List<XFile> _imagesChoisies = [];
+  final List<XFile> _photosChoisies = [];
   final ImagePicker _picker = ImagePicker();
 
 
@@ -49,7 +49,17 @@ class _Page1State extends State<Page1> {
   ]//fin liste emojis
 
   Future<void> _pickImages() async{
+    if(_photosChoisies.length >= 5){
+      return;
+    }
+    final List<XFile> images = await _picker.pickMultiImage();
+    if (images.isEmpty) return;
+    setState(() {
+      final int remaining = 5 - _photosChoisies.length;
+      final List<XFile> toAdd = images.take(remaining).toList();
+    _photosChoisies.addAll(toAdd);
+    }); //fin setState
 
   } //fin méthode _pickImages
-  
+
 }//fin _Page1State
