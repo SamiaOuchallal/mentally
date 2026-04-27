@@ -62,4 +62,10 @@ class _Page1State extends State<Page1> {
 
   } //fin méthode _pickImages
 
+  void _supprimerImage(int index){
+    setState(() {
+      _photosChoisies.removeAt(index);
+    });
+  }//fin _supprimerImage
+
 }//fin _Page1State
