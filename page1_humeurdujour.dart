@@ -20,33 +20,13 @@ class _Page1State extends State<Page1> {
 
 
 
-  final List<Map<String, dynamic>> _emojis = [
-    {
-      'image': 'super.png',
-      'label': 'Super',
-      'color': Color(0xFFF4BC69)
-    },
-    {
-      'image': 'bien.png',
-      'label': 'Bien',
-      'color': Color(0xFFF6D178)
-    },
-    {
-      'image': 'neutre.png',
-      'label': 'Neutre',
-      'color': Color(0xFFF4DEA2)
-    },
-    {
-      'image': 'pastop.png',
-      'label': 'pas top',
-      'color': Color(0xFF91CDD6)
-    },
-    {
-      'image': 'mal.png',
-      'label': 'Mal',
-      'color': Color(0xFF6B99A9)
-    }
-  ]//fin liste emojis
+  final List<Map<String, dynamic>> _listeEmojis = [
+    {'image': 'super.png','label': 'Super', 'color': Color(0xFFF4BC69)},
+    {'image': 'bien.png','label': 'Bien', 'color': Color(0xFFF6D178)},
+    {'image': 'neutre.png', 'label': 'Neutre', 'color': Color(0xFFF4DEA2) },
+    {'image': 'pastop.png','label': 'pas top','color': Color(0xFF91CDD6)},
+    {'image': 'mal.png','label': 'Mal','color': Color(0xFF6B99A9)}
+  ]//fin listeEmojis
 
   Future<void> _pickImages() async{
     if(_photosChoisies.length >= 5){
@@ -62,10 +42,22 @@ class _Page1State extends State<Page1> {
 
   } //fin méthode _pickImages
 
-  void _supprimerImage(int index){
+  void _supprimerPhoto(int index){
     setState(() {
       _photosChoisies.removeAt(index);
     });
-  }//fin _supprimerImage
+  }//fin _supprimerPhoto
+
+  @override
+  Widget build(BuildContext context) {
+    final Color couleurActuelle;
+    if (_indexHumeur =! null) {
+      couleurActuelle = _listeEmojis[_indexHumeur]['color'] as Color
+    } //fin if
+    else {
+      couleurActuelle = const Color.fromARGB(0, 22, 22, 24)
+    }//fin esle
+
+  }//fin build
 
 }//fin _Page1State
