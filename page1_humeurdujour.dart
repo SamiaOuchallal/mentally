@@ -58,6 +58,24 @@ class _Page1State extends State<Page1> {
       couleurActuelle = const Color.fromARGB(0, 22, 22, 24)
     }//fin esle
 
+    return Scaffold(
+      backgroundColor: Color(0xFFFFFFFF),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 28.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 40),
+              Text('Comment vous sentez-vous \naujourd\'hui ?', style: TextStyle(
+                fontSize: 25, fontWeight: FontWeight.w800, color: Color(0xFF000010),height: 1.15, letterSpacing: -0.5, )),
+
+            ], //children de SingleChildScrollView
+          )
+        )
+      )
+    ) //fin Scaffhold
+
   }//fin build
 
 }//fin _Page1State
