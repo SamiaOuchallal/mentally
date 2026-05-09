@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'services/notifications_services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,8 +25,42 @@ void main() async {
   runApp(const MentallyApp());
 }
 
-class MentallyApp extends StatelessWidget {
+class MentallyApp extends StatefulWidget {
   const MentallyApp({super.key});
+
+  @override
+  State<MentallyApp> createState() => _MentallyAppState();
+}
+
+class _MentallyAppState extends State<MentallyApp> {
+  double textScale = 1.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTextSize();
+  }
+
+  Future<void> _loadTextSize() async {
+    final prefs = await SharedPreferences.getInstance();
+    final size = prefs.getString("text_size") ?? "normal";
+
+    setState(() {
+      switch (size) {
+        case "small":
+          textScale = 0.85;
+          break;
+        case "large":
+          textScale = 1.15;
+          break;
+        case "xlarge":
+          textScale = 1.30;
+          break;
+        default:
+          textScale = 1.0;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +70,12 @@ class MentallyApp extends StatelessWidget {
       theme: AppTheme.light,
       onGenerateRoute: AppRouter.generate,
       initialRoute: '/',
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaleFactor: textScale),
+          child: child!,
+        );
+      },
     );
   }
 }

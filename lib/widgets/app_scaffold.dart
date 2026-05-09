@@ -40,7 +40,7 @@ class AppScaffold extends StatelessWidget {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.play_circle_fill),
-            label: "Vidéos",
+            label: "Exercices",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

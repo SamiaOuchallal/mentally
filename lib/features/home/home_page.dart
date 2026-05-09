@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mentally/features/settings/settings_page.dart';
 import '../../../../widgets/app_scaffold.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mentally/features/home/mood_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -33,6 +35,21 @@ class _HomePageState extends State<HomePage> {
     },
     {'image': 'mal.png', 'label': 'Mal', 'color': const Color(0xFF6B99A9)},
   ];
+
+  String userName = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString("user_name") ?? "";
+    });
+  }
 
   Future<void> _pickImages() async {
     if (_photosChoisies.length >= 5) return;
@@ -86,7 +103,7 @@ class _HomePageState extends State<HomePage> {
         : Colors.white;
 
     return AppScaffold(
-      title: "Aujourd’hui",
+      title: "Mentally",
       currentIndex: 0,
       onTabSelected: (index) {
         switch (index) {
@@ -116,8 +133,8 @@ class _HomePageState extends State<HomePage> {
             children: [
               const SizedBox(height: 20),
 
-              const Text(
-                "Comment vous sentez-vous\naujourd’hui ?",
+              Text(
+                "Salut $userName, comment tu te sens \naujourd’hui ?",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25,

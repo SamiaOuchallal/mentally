@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:mentally/features/settings/user_profile_page.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../widgets/app_scaffold.dart';
 import '../../services/notifications_services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'text_size_page.dart';
+
+String userName = "";
+final userNameNotifier = ValueNotifier<String>("");
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    Future.microtask(() async {
+      final prefs = await SharedPreferences.getInstance();
+      userNameNotifier.value = prefs.getString("user_name") ?? "";
+    });
+
     return AppScaffold(
       title: "Paramètres",
       currentIndex: 4,
@@ -31,6 +42,7 @@ class SettingsPage extends StatelessWidget {
       },
       body: ListView(
         padding: const EdgeInsets.all(20),
+
         children: [
           _SectionTitle("Profil utilisateur >"),
           ListTile(
@@ -41,38 +53,40 @@ class SettingsPage extends StatelessWidget {
             },
           ),
 
-          _SettingsTile(
-            title: "Nom / pseudo",
-            subtitle: "blabla",
-            onTap: () {},
+          ValueListenableBuilder<String>(
+            valueListenable: userNameNotifier,
+            builder: (context, value, _) {
+              return _SettingsTile(
+                title: "Profil utilisateur",
+                subtitle: "Nom, âge, genre",
+                onTap: () async {
+                  final name = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const UserProfilPage()),
+                  );
+
+                  if (name != null) {
+                    userNameNotifier.value = name;
+                  }
+                },
+              );
+            },
           ),
-          _SettingsTile(
-            title: "Age ou tranche d'âge",
-            subtitle: "blabla",
-            onTap: () {},
-          ),
-          _SettingsTile(
-            title: "Genre (optionnel)",
-            subtitle: "blabla",
-            onTap: () {},
-          ),
+
           _SettingsTile(
             title: "Niveau de stress (auto-évaluation)",
-            subtitle: "blabla",
             onTap: () {},
           ),
           _SettingsTile(
             title: "Habitudes (sport, sommeil, etc.)",
-            subtitle: "blabla",
             onTap: () {},
           ),
 
           const SizedBox(height: 25),
 
-          _SectionTitle("Notifications & rappels >"),
+          _SectionTitle("Notifications & rappels"),
           _SettingsTile(
             title: "Activer / désactiver les notifications",
-            subtitle: "blabla",
             onTap: () {},
           ),
           _SettingsTile(
@@ -93,7 +107,7 @@ class SettingsPage extends StatelessWidget {
 
           const SizedBox(height: 25),
 
-          _SectionTitle("Apparence >"),
+          _SectionTitle("Apparence"),
           _SettingsTile(
             title: "Mode sombre / clair",
             subtitle: "Personnalisation du thème",
@@ -101,8 +115,12 @@ class SettingsPage extends StatelessWidget {
           ),
           _SettingsTile(
             title: "Taille du texte",
-            subtitle: "Normal, grand, très grand",
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const TextSizePage()),
+              );
+            },
           ),
 
           const SizedBox(height: 25),
@@ -125,25 +143,6 @@ class SettingsPage extends StatelessWidget {
           ),
 
           const SizedBox(height: 25),
-
-          _SectionTitle("Objectifs & progression >"),
-          _SettingsTile(
-            title: "Définir des objectifs personnalisés",
-            subtitle: "blabla",
-            onTap: () {},
-          ),
-          _SettingsTile(
-            title: "Suivi des progrès",
-            subtitle: "blabla",
-            onTap: () {},
-          ),
-          _SettingsTile(
-            title: "Réinitialisation des objectifs",
-            subtitle: "blabla",
-            onTap: () {},
-          ),
-
-          const SizedBox(height: 40),
         ],
       ),
     );
@@ -168,19 +167,16 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------
-// TILE AVEC ICÔNE + TITRE + SOUS-TITRE + FLÈCHE
-// ---------------------------------------------------------
 class _SettingsTile extends StatelessWidget {
   final IconData? icon;
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final VoidCallback onTap;
 
   const _SettingsTile({
     this.icon,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     required this.onTap,
   });
 
@@ -197,10 +193,13 @@ class _SettingsTile extends StatelessWidget {
           color: AppColors.textDark,
         ),
       ),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(fontSize: 13, color: Colors.grey),
-      ),
+
+      subtitle: subtitle != null
+          ? Text(
+              subtitle!,
+              style: const TextStyle(fontSize: 13, color: Colors.grey),
+            )
+          : null,
       trailing: const Icon(Icons.chevron_right, color: Colors.grey),
       onTap: onTap,
     );
