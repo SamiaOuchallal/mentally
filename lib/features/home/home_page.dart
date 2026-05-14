@@ -1,11 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mentally/features/settings/settings_page.dart';
-import '../../../../widgets/app_scaffold.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:mentally/features/home/mood_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../widgets/app_scaffold.dart';
+import 'package:image_picker/image_picker.dart';
+
+// ── Clé partagée avec progress_page ──────────
+const String kNotesProgressionKey = 'notes_progression';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,19 +24,11 @@ class _HomePageState extends State<HomePage> {
   final ImagePicker _picker = ImagePicker();
 
   final List<Map<String, dynamic>> _listeEmojis = [
-    {'image': 'super.png', 'label': 'Super', 'color': const Color(0xFFF4BC69)},
-    {'image': 'bien.png', 'label': 'Bien', 'color': const Color(0xFFF6D178)},
-    {
-      'image': 'neutre.png',
-      'label': 'Neutre',
-      'color': const Color(0xFFF4DEA2),
-    },
-    {
-      'image': 'pasouf.png',
-      'label': 'Pas top',
-      'color': const Color(0xFF91CDD6),
-    },
-    {'image': 'mal.png', 'label': 'Mal', 'color': const Color(0xFF6B99A9)},
+    {'image': 'super.png',   'label': 'Super',   'color': const Color(0xFFF4BC69), 'note': 5.0},
+    {'image': 'bien.png',    'label': 'Bien',    'color': const Color(0xFFF6D178), 'note': 4.0},
+    {'image': 'neutre.png',  'label': 'Neutre',  'color': const Color(0xFFF4DEA2), 'note': 3.0},
+    {'image': 'pasouf.png',  'label': 'Pas top', 'color': const Color(0xFF91CDD6), 'note': 2.0},
+    {'image': 'mal.png',     'label': 'Mal',     'color': const Color(0xFF6B99A9), 'note': 1.0},
   ];
 
   String userName = "";
@@ -53,41 +48,61 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _pickImages() async {
     if (_photosChoisies.length >= 5) return;
-
     final List<XFile> images = await _picker.pickMultiImage();
     if (images.isEmpty) return;
-
     setState(() {
       final int remaining = 5 - _photosChoisies.length;
       _photosChoisies.addAll(images.take(remaining));
     });
   }
 
+  // ── Sauvegarder la note d'humeur dans SharedPreferences ──
+  Future<void> _sauvegarderNoteHumeur(double note) async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString(kNotesProgressionKey);
+    final List notes = data != null ? jsonDecode(data) : [];
+    notes.add({
+      'valeur': note,
+      'date': DateTime.now().toIso8601String(),
+    });
+    await prefs.setString(kNotesProgressionKey, jsonEncode(notes));
+  }
+
   Future<void> _saveMood() async {
     if (_indexHumeur == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Choisissez une humeur")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Choisissez une humeur")),
+      );
       return;
     }
 
-    // Nettoyage des chemins photos
     final photosPaths = _photosChoisies
         .map((p) => p.path)
-        .where((p) => p != null && p.isNotEmpty)
+        .where((p) => p.isNotEmpty)
         .toList();
 
+    // Sauvegarde dans Supabase
     final service = MoodService();
-
     await service.saveMood(
       moodIndex: _indexHumeur!,
       note: _noteController.text,
       photos: photosPaths,
     );
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Humeur enregistrée !")));
+    // Sauvegarde de la note d'humeur pour le graphique
+    final double noteHumeur = _listeEmojis[_indexHumeur!]['note'] as double;
+    await _sauvegarderNoteHumeur(noteHumeur);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Humeur enregistrée !")),
+      );
+      setState(() {
+        _indexHumeur = null;
+        _noteController.clear();
+        _photosChoisies.clear();
+      });
+    }
   }
 
   void _supprimerPhoto(int index) {
@@ -134,9 +149,9 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 20),
 
               Text(
-                "Salut $userName, comment tu te sens \naujourd’hui ?",
+                "Salut $userName, comment tu te sens \naujourd'hui ?",
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF000010),
@@ -147,17 +162,14 @@ class _HomePageState extends State<HomePage> {
 
               const SizedBox(height: 30),
 
-              // --- Emojis ---
+              // ── Emojis ───────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: List.generate(_listeEmojis.length, (index) {
                   final emoji = _listeEmojis[index];
+                  final note = emoji['note'] as double;
                   return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _indexHumeur = index;
-                      });
-                    },
+                    onTap: () => setState(() => _indexHumeur = index),
                     child: Column(
                       children: [
                         Container(
@@ -177,8 +189,12 @@ class _HomePageState extends State<HomePage> {
                             height: 50,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Text(emoji['label']),
+                        const SizedBox(height: 4),
+                        Text(emoji['label'], style: const TextStyle(fontSize: 12)),
+                        Text(
+                          "${note.toInt()}/5",
+                          style: const TextStyle(fontSize: 11, color: Colors.black54),
+                        ),
                       ],
                     ),
                   );
@@ -187,7 +203,7 @@ class _HomePageState extends State<HomePage> {
 
               const SizedBox(height: 30),
 
-              // --- Champ texte ---
+              // ── Champ texte ──────────────────
               TextField(
                 controller: _noteController,
                 maxLines: 4,
@@ -203,7 +219,7 @@ class _HomePageState extends State<HomePage> {
 
               const SizedBox(height: 20),
 
-              // --- Bouton photos ---
+              // ── Bouton photos ────────────────
               ElevatedButton(
                 onPressed: _pickImages,
                 child: const Text("Ajouter des photos"),
@@ -211,7 +227,7 @@ class _HomePageState extends State<HomePage> {
 
               const SizedBox(height: 20),
 
-              // --- Photos choisies ---
+              // ── Photos choisies ──────────────
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
@@ -223,11 +239,7 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(8),
                         child: kIsWeb
                             ? Image.network(photo.path, width: 100, height: 100)
-                            : Image.file(
-                                File(photo.path),
-                                width: 100,
-                                height: 100,
-                              ),
+                            : Image.file(File(photo.path), width: 100, height: 100),
                       ),
                       Positioned(
                         right: 0,
@@ -240,11 +252,7 @@ class _HomePageState extends State<HomePage> {
                               color: Colors.black54,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
-                              Icons.close,
-                              color: Colors.white,
-                              size: 16,
-                            ),
+                            child: const Icon(Icons.close, color: Colors.white, size: 16),
                           ),
                         ),
                       ),
@@ -255,18 +263,14 @@ class _HomePageState extends State<HomePage> {
 
               const SizedBox(height: 30),
 
+              // ── Bouton enregistrer ───────────
               ElevatedButton(
                 onPressed: _saveMood,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
-                    vertical: 14,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: const Text("Enregistrer mon humeur"),
               ),
