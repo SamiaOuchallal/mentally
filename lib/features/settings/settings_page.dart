@@ -134,7 +134,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 25),
 
-          _SectionTitle("Notifications & rappels"),
+          _SectionTitle("Notifications & rappels >"),
           _SettingsTile(
             title: "Activer les notifications",
             onTap: () {},
@@ -179,7 +179,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 25),
 
-          _SectionTitle("Apparence"),
+          _SectionTitle("Apparence >"),
           ListTile(
             leading: const Icon(Icons.dark_mode),
             title: const Text("Mode sombre"),

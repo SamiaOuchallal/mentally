@@ -45,8 +45,19 @@ class _CalendarPageState extends State<CalendarPage> {
 
   String _moisEnFrancais(int mois) {
     const noms = [
-      '', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+      '',
+      'janvier',
+      'février',
+      'mars',
+      'avril',
+      'mai',
+      'juin',
+      'juillet',
+      'août',
+      'septembre',
+      'octobre',
+      'novembre',
+      'décembre',
     ];
     return noms[mois];
   }
@@ -78,7 +89,6 @@ class _CalendarPageState extends State<CalendarPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Padding(
               padding: const EdgeInsets.all(16),
               child: TableCalendar(
@@ -102,7 +112,9 @@ class _CalendarPageState extends State<CalendarPage> {
                 },
 
                 onDaySelected: (selected, _) async {
-                  final mood = await repo.getMoodForDay(DateUtils.dateOnly(selected));
+                  final mood = await repo.getMoodForDay(
+                    DateUtils.dateOnly(selected),
+                  );
                   setState(() {
                     _selectJour = selected;
                     _selectHumeur = mood;
@@ -127,8 +139,8 @@ class _CalendarPageState extends State<CalendarPage> {
                         padding: const EdgeInsets.only(top: 17),
                         child: Image.asset(
                           'assets/emojis/$imageName',
-                          width: 67,
-                          height: 67,
+                          width: 75,
+                          height: 75,
                         ),
                       );
                     }
@@ -139,12 +151,12 @@ class _CalendarPageState extends State<CalendarPage> {
             ),
 
             if (_selectJour != null) ...[
-                const Divider(
-                  thickness: 2,
-                  color: AppColors.blueTeal,
-                  indent: 16,
-                  endIndent: 16,
-                  ),
+              const Divider(
+                thickness: 2,
+                color: AppColors.blueTeal,
+                indent: 16,
+                endIndent: 16,
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Center(
@@ -173,7 +185,6 @@ class _CalendarPageState extends State<CalendarPage> {
                   ),
                 ),
             ],
-
           ],
         ),
       ),

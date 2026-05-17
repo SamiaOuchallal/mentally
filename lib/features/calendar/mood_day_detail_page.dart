@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mentally/theme/app_mood_emojis.dart';
 import 'package:mentally/theme/app_colors.dart';
+import 'dart:io';
 
 class MoodDayDetailPage extends StatelessWidget {
   final Map<String, dynamic> mood;
@@ -14,7 +15,6 @@ class MoodDayDetailPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Row(
             children: [
               const Text(
@@ -116,16 +116,26 @@ class MoodDayDetailPage extends StatelessWidget {
             const SizedBox(height: 20),
           ],
 
-          if (mood['photos'] != null) ...[
-            const Text(
-              "Photos :",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.blueDeep,
-              ),
+          const Text(
+            "Photos :",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.blueDeep,
             ),
-            const SizedBox(height: 10),
+          ),
+          const SizedBox(height: 10),
+
+          if (mood['photos'] == null || (mood['photos'] as List).isEmpty)
+            const Text(
+              "Aucune photo enregistrée",
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey,
+                fontStyle: FontStyle.italic,
+              ),
+            )
+          else
             Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -133,17 +143,22 @@ class MoodDayDetailPage extends StatelessWidget {
                 for (var p in mood['photos'])
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      p,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                    ),
+                    child: p.toString().startsWith('http')
+                        ? Image.network(
+                            p,
+                            width: 250,
+                            height: 250,
+                            fit: BoxFit.cover,
+                          )
+                        : Image.file(
+                            File(p),
+                            width: 190,
+                            height: 190,
+                            fit: BoxFit.cover,
+                          ),
                   ),
               ],
             ),
-          ],
-
         ],
       ),
     );

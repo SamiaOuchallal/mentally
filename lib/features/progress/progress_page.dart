@@ -76,6 +76,22 @@ class _ProgressPageState extends State<ProgressPage>
     }
   }
 
+  List<NoteEntry> _derniereNoteParJour(List<NoteEntry> notes) {
+    final Map<String, NoteEntry> map = {};
+
+    for (final n in notes) {
+      final key = "${n.date.year}-${n.date.month}-${n.date.day}";
+
+      if (!map.containsKey(key) || n.date.isAfter(map[key]!.date)) {
+        map[key] = n;
+      }
+    }
+
+    final result = map.values.toList();
+    result.sort((a, b) => a.date.compareTo(b.date));
+    return result;
+  }
+
   List<NoteEntry> get _notesFiltrees {
     final now = DateTime.now();
     final debut = switch (_periode) {
@@ -83,7 +99,8 @@ class _ProgressPageState extends State<ProgressPage>
       Periode.mois => DateTime(now.year, now.month - 1, now.day),
       Periode.an => DateTime(now.year - 1, now.month, now.day),
     };
-    return _toutesLesNotes.where((n) => n.date.isAfter(debut)).toList();
+    final notes = _toutesLesNotes.where((n) => n.date.isAfter(debut)).toList();
+    return _derniereNoteParJour(notes);
   }
 
   double get _moyenne {
@@ -393,12 +410,32 @@ class _ProgressPageState extends State<ProgressPage>
                 spacing: 10,
                 runSpacing: 6,
                 children: [
-                  _LegendDot(color: const Color(0xFFF4BB69), label: "Super    ",   image: 'super.png'),
-                  _LegendDot(color: const Color(0xFFF3D37C), label: "Bien    ",    image: 'bien.png'),
-                  _LegendDot(color: const Color(0xFFF4DEA2), label: "Neutre    ",  image: 'neutre.png'),
-                  _LegendDot(color: const Color(0xFF90CDD6), label: "Pas top    ", image: 'pasouf.png'),
-                  _LegendDot(color: const Color(0xFF6C9AAA), label: "Mal    ",     image: 'mal.png'),
-                                  ],
+                  _LegendDot(
+                    color: const Color(0xFFF4BB69),
+                    label: "Super    ",
+                    image: 'super.png',
+                  ),
+                  _LegendDot(
+                    color: const Color(0xFFF3D37C),
+                    label: "Bien    ",
+                    image: 'bien.png',
+                  ),
+                  _LegendDot(
+                    color: const Color(0xFFF4DEA2),
+                    label: "Neutre    ",
+                    image: 'neutre.png',
+                  ),
+                  _LegendDot(
+                    color: const Color(0xFF90CDD6),
+                    label: "Pas top    ",
+                    image: 'pasouf.png',
+                  ),
+                  _LegendDot(
+                    color: const Color(0xFF6C9AAA),
+                    label: "Mal    ",
+                    image: 'mal.png',
+                  ),
+                ],
               ),
 
               const SizedBox(height: 24),
@@ -492,7 +529,11 @@ class _LegendDot extends StatelessWidget {
   final Color color;
   final String label;
   final String image;
-  const _LegendDot({required this.color, required this.label, required this.image});
+  const _LegendDot({
+    required this.color,
+    required this.label,
+    required this.image,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -508,11 +549,7 @@ class _LegendDot extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        Image.asset(
-          'assets/emojis/$image',
-          width: 32,
-          height: 32,
-        ),
+        Image.asset('assets/emojis/$image', width: 32, height: 32),
         const SizedBox(width: 3),
         Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
       ],
